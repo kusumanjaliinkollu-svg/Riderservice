@@ -1,5 +1,7 @@
 package com.example.rapidoRider.Entity;
 
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,10 +20,11 @@ public class Rider {
 	private double wallet;
 	private int noofrides;
 	private String licence;
-	@OneToOne
+	private String status="online";
+	@OneToOne(cascade = CascadeType.ALL)
 	private Vehicle vehicle;
 	public Rider(String name, long mobno, String mail, String gender, double wallet, int noofrides, String licence,
-			Vehicle vehicle) {
+			Vehicle vehicle,String status) {
 		super();
 		this.name = name;
 		this.mobno = mobno;
@@ -31,6 +34,7 @@ public class Rider {
 		this.noofrides = noofrides;
 		this.licence = licence;
 		this.vehicle = vehicle;
+		this.status=status;
 	}
 	public Rider() {
 		super();
@@ -88,6 +92,12 @@ public class Rider {
 	}
 	public void setVehicle(Vehicle vehicle) {
 		this.vehicle = vehicle;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	
 }

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Rider Location</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        input,
+        select,
+        button {
+            padding: 8px;
+            margin: 8px 0;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #location {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Rider Location</h2>
+
+    <label>Rider ID:</label>
+    <br>
+
+    <input type="number" id="riderId" placeholder="Enter Rider ID">
+
+    <br><br>
+
+    <label>Vehicle Type:</label>
+    <br>
+
+    <select id="vehicleType">
+        <option value="auto">Auto</option>
+        <option value="bike">Bike</option>
+        <option value="car">Car</option>
+    </select>
+
+    <br><br>
+
+    <button onclick="startLocation()">Start Location</button>
+    <button onclick="stopLocation()">Stop Location</button>
+
+    <div id="status"></div>
+
+    <div id="location"></div>
+
+
+    <script>
+
+        let locationInterval = null;
+
+
+        // Start sending location
+        function startLocation() {
+
+            let riderId = document.getElementById("riderId").value;
+            let vehicleType = document.getElementById("vehicleType").value;
+
+            if (riderId === "") {
+
+                document.getElementById("status").innerText =
+                    "Please enter Rider ID";
+
+                return;
+            }
+
+
+            if (!navigator.geolocation) {
+
+                document.getElementById("status").innerText =
+                    "Geolocation is not supported by this browser";
+
+                return;
+            }
+
+
+            document.getElementById("status").innerText =
+                "Getting location...";
+
+
+            // Send location immediately
+            sendLocation(riderId, vehicleType);
+
+
+            // Send location every 10 seconds
+            locationInterval = setInterval(function () {
+
+                sendLocation(riderId, vehicleType);
+
+            }, 10000);
+        }
+
+
+
+        // Get browser location and send to backend
+        function sendLocation(riderId, vehicleType) {
+
+            navigator.geolocation.getCurrentPosition(
+
+                function (position) {
+
+                    let latitude = position.coords.latitude;
+                    let longitude = position.coords.longitude;
+
+
+                    console.log("Rider ID:", riderId);
+                    console.log("Vehicle:", vehicleType);
+                    console.log("Latitude:", latitude);
+                    console.log("Longitude:", longitude);
+
+
+                    document.getElementById("location").innerHTML =
+                        "Latitude: " + latitude +
+                        "<br>Longitude: " + longitude;
+
+
+                    // Send location to Spring Boot
+                    fetch(
+                        "/rider/sendcurrentlocation?rid="
+                        + riderId
+                        + "&vehc="
+                        + vehicleType,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                latitude: latitude,
+                                longitude: longitude
+                            })
+                        }
+                    )
+
+                    .then(response => {
+
+                        if (!response.ok) {
+
+                            return response.text().then(message => {
+
+                                throw new Error(
+                                    "HTTP " +
+                                    response.status +
+                                    ": " +
+                                    message
+                                );
+
+                            });
+                        }
+
+                        return response.text();
+                    })
+
+                    .then(data => {
+
+                        console.log("Server:", data);
+
+                        document.getElementById("status").innerText =
+                            "Location sent successfully: " + data;
+                    })
+
+                    .catch(error => {
+
+                        console.error("Error:", error);
+
+                        document.getElementById("status").innerText =
+                            "Error: " + error.message;
+                    });
+                },
+
+
+                function (error) {
+
+                    console.log(
+                        "Location error:",
+                        error.message
+                    );
+
+                    document.getElementById("status").innerText =
+                        "Unable to get location: " +
+                        error.message;
+                }
+            );
+        }
+
+
+
+        // Stop sending location
+        function stopLocation() {
+
+            if (locationInterval !== null) {
+
+                clearInterval(locationInterval);
+
+                locationInterval = null;
+
+                document.getElementById("status").innerText =
+                    "Location updates stopped";
+
+                console.log("Location updates stopped");
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>

@@ -14,12 +14,14 @@ public class Vehicle {
 	private String name;
 	private String vehicleno;
 	private String model;
-	public Vehicle(String type, String name, String vehicleno, String model) {
+	private String status;
+	public Vehicle(String type, String name, String vehicleno, String model,String status) {
 		super();
 		this.type = type;
 		this.name = name;
 		this.vehicleno = vehicleno;
 		this.model = model;
+		this.status=status;
 	}
 	public Vehicle() {
 		super();
@@ -53,6 +55,12 @@ public class Vehicle {
 	}
 	public void setModel(String model) {
 		this.model = model;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	
 }
